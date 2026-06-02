@@ -1,0 +1,36 @@
+# Unity generated folders
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Mm]emoryCaptures/
+[Rr]ecordings/
+
+# User settings
+UserSettings/
+
+# Visual Studio / Rider
+.vs/
+.idea/
+.vscode/
+
+# Auto-generated project files
+*.csproj
+*.unityproj
+*.sln
+*.slnx
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+
+# Unity cache
+sysinfo.txt
+
+# OS generated files
+.DS_Store
+Thumbs.db
