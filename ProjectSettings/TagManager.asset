@@ -5,6 +5,9 @@ TagManager:
   serializedVersion: 3
   tags:
   - pickup
+  - Coin
+  - Portal
+  - Trap
   layers:
   - Default
   - TransparentFX
