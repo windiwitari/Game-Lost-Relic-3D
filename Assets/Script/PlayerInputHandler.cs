@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem; 
+
 public class PlayerInputHandler : MonoBehaviour
 {
     [Header("Input Action Asset")]
@@ -15,6 +16,8 @@ public class PlayerInputHandler : MonoBehaviour
     [SerializeField] private string rotateObject = "RotateObject";
     [SerializeField] private string sprint = "Sprint";
 
+    [Header("Sistem Kendali Mobile (Joystick Pack)")]
+    [SerializeField] private FixedJoystick mobileJoystick; // Tambahan untuk menyambungkan UI Joystick
 
     private InputAction movementAction;
     private InputAction rotationAction;
@@ -22,14 +25,33 @@ public class PlayerInputHandler : MonoBehaviour
     private InputAction rotateObjectAction;
     private InputAction sprintAction;
 
+    // Menyimpan nilai murni dari Keyboard/Gamepad
+    private Vector2 rawMovementInput;
 
+    // KUNCI UTAMA: Menggabungkan nilai input keyboard/device dengan geseran analog joystick secara real-time
+    public Vector2 MovementInput 
+    { 
+        get 
+        {
+            if (mobileJoystick != null)
+            {
+                // Ambil nilai horizontal dan vertical dari Joystick Pack
+                Vector2 joystickValues = new Vector2(mobileJoystick.Horizontal, mobileJoystick.Vertical);
+                
+                // Jika joystick sedang digeser, prioritaskan nilai joystick. Jika tidak, pakai nilai keyboard/raw
+                if (joystickValues.sqrMagnitude > 0.01f)
+                {
+                    return joystickValues;
+                }
+            }
+            return rawMovementInput;
+        }
+    }
 
-    public Vector2 MovementInput { get; private set; }
     public Vector2 RotationInput { get; private set; }
     public bool JumpTriggered { get; private set; }
     public bool RotateObjectTriggered { get; private set; }
     public bool SprintTriggered { get; private set; }
-
 
     private void Awake()
     {
@@ -46,8 +68,9 @@ public class PlayerInputHandler : MonoBehaviour
 
     private void SubscribeActionValuesToInputEvents()
     {
-        movementAction.performed += inputInfo => MovementInput = inputInfo.ReadValue<Vector2>();
-        movementAction.canceled += inputInfo => MovementInput = Vector2.zero;
+        // Mengalihkan pembacaan movement asli ke variabel rawMovementInput
+        movementAction.performed += inputInfo => rawMovementInput = inputInfo.ReadValue<Vector2>();
+        movementAction.canceled += inputInfo => rawMovementInput = Vector2.zero;
 
         rotationAction.performed += inputInfo => RotationInput = inputInfo.ReadValue<Vector2>();
         rotationAction.canceled += inputInfo => RotationInput = Vector2.zero;
@@ -60,15 +83,7 @@ public class PlayerInputHandler : MonoBehaviour
 
         rotateObjectAction.performed += _ => RotateObjectTriggered = true;
         rotateObjectAction.canceled += _ => RotateObjectTriggered = false;
-
-
     }
-
-    /// <summary>
-    /// Atomically consumes the toggle flag. Returns true if the toggle was set and clears it.
-    /// This prevents external classes from needing write access to the property setter.
-    /// </summary>
-    
 
     private void OnEnable()
     {

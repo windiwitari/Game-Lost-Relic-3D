@@ -23,6 +23,9 @@ public class PlayerTPS : MonoBehaviour
     [SerializeField] private float groundDistance = 0.3f;
     [SerializeField] private LayerMask groundMask;
 
+    [Header("Mobile Controller (Joystick Pack)")]
+    [SerializeField] private FixedJoystick mobileJoystick; // Kolom baru untuk drag joystick dari Canvas
+
     private bool isGrounded;
 
     private CharacterController controller;
@@ -83,7 +86,23 @@ public class PlayerTPS : MonoBehaviour
 
     private void HandleMovement()
     {
-        Vector3 move = new Vector3(moveInput.x, 0, moveInput.y);
+        // 1. Ambil input dasar dari New Input System (Keyboard / Gamepad)
+        Vector2 finalInput = moveInput;
+
+        // 2. KUNCI UTAMA: Jika Joystick di layar disentuh/digerakkan, gabungkan nilainya ke sistem pergerakan
+        if (mobileJoystick != null)
+        {
+            Vector2 joystickValues = new Vector2(mobileJoystick.Horizontal, mobileJoystick.Vertical);
+            
+            // Jika analog digeser melebihi batas toleransi kecil, override nilai inputnya
+            if (joystickValues.sqrMagnitude > 0.01f)
+            {
+                finalInput = joystickValues;
+            }
+        }
+
+        // Konversi nilai input gabungan ke Vector3 gerakan dunia game
+        Vector3 move = new Vector3(finalInput.x, 0, finalInput.y);
 
         if (move.magnitude > 0.1f)
         {
