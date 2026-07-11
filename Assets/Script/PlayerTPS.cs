@@ -24,7 +24,7 @@ public class PlayerTPS : MonoBehaviour
     [SerializeField] private LayerMask groundMask;
 
     [Header("Mobile Controller (Joystick Pack)")]
-    [SerializeField] private FixedJoystick mobileJoystick; // Kolom baru untuk drag joystick dari Canvas
+    [SerializeField] private FixedJoystick mobileJoystick; // Kolom untuk drag joystick dari Canvas
 
     private bool isGrounded;
 
@@ -84,6 +84,16 @@ public class PlayerTPS : MonoBehaviour
         jumpPressed = true;
     }
 
+    // TAMBAHAN: Fungsi public baru agar bisa dipanggil oleh Event klik Tombol PNG Mobile
+    public void TriggerMobileJump()
+    {
+        // Hanya trigger jika karakter menyentuh tanah agar tidak bisa double jump di udara
+        if (isGrounded)
+        {
+            jumpPressed = true; 
+        }
+    }
+
     private void HandleMovement()
     {
         // 1. Ambil input dasar dari New Input System (Keyboard / Gamepad)
@@ -139,6 +149,7 @@ public class PlayerTPS : MonoBehaviour
             animator.SetTrigger("jump");
         }
 
+        // Reset status jump setelah diproses di frame ini
         jumpPressed = false;
     }
 
