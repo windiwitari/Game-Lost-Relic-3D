@@ -28,8 +28,9 @@ public class CoinCollector : MonoBehaviour
     private bool isGameFinished = false;
 
     [Header("FITUR PENILAIAN 2: UI Menang (Victory)")]
-    public Canvas victoryCanvas;     // Hubungkan objek 'Canvas Victory' yang non-ceklis ke sini
-    public Button nextButton;        // Hubungkan objek 'NextButton' di dalam Canvas Victory
+    public Canvas victoryCanvas;         // Hubungkan objek 'Canvas Victory' yang non-ceklis ke sini
+    public Button nextButton;            // Hubungkan objek 'NextButton' di dalam Canvas Victory
+    public Button victoryBackButton;     // TAMBAHAN: Hubungkan objek 'BackButton' di dalam Canvas Victory
 
     private void Start()
     {
@@ -54,6 +55,7 @@ public class CoinCollector : MonoBehaviour
         if (restartButton != null) restartButton.onClick.AddListener(RestartGame);
         if (exitButton != null) exitButton.onClick.AddListener(ExitGame);
         if (nextButton != null) nextButton.onClick.AddListener(LoadNextLevel);
+        if (victoryBackButton != null) victoryBackButton.onClick.AddListener(BackToMainMenu); // Daftarkan tombol back victory
     }
 
     private void Update()
@@ -150,10 +152,18 @@ public class CoinCollector : MonoBehaviour
         Cursor.visible = true;
     }
 
+    // Tombol Next: diarahkan ke scene berikutnya berdasarkan index build (+ 1)
     public void LoadNextLevel()
     {
         Time.timeScale = 1f; 
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1); 
+    }
+
+    // Tombol Back di Panel Victory: diarahkan kembali ke Main Menu secara spesifik
+    public void BackToMainMenu()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("MainMenu"); // PENTING: Sesuaikan kata "MainMenu" dengan nama scene menu kamu
     }
 
     public void RestartGame()
@@ -170,13 +180,11 @@ public class CoinCollector : MonoBehaviour
         #endif
     }
 
-    // Mengubah tampilan teks koin menjadi Statue
     void UpdateCoinUI()
     {
         if (coinText != null) coinText.text = "Statue: " + coinsCollected + " / " + totalCoinsInLevel;
     }
 
-    // Mengubah tampilan teks nyawa menjadi Armor
     void UpdateHeartUI()
     {
         if (heartText != null) heartText.text = "Armor: " + playerLives;
