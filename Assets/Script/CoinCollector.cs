@@ -208,7 +208,7 @@ public class CoinCollector : MonoBehaviour
 
     void UpdateCoinUI()
     {
-        if (coinText != null) coinText.text = "Statue: " + coinsCollected + " / " + totalCoinsInLevel;
+        if (coinText != null) coinText.text = "Coin: " + coinsCollected + " / " + totalCoinsInLevel;
     }
 
     void UpdateHeartUI()
