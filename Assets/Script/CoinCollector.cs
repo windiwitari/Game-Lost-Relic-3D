@@ -80,11 +80,18 @@ public class CoinCollector : MonoBehaviour
     {
         if (isGameFinished) return;
 
-        // 1. Ambil Patung (Statue)
+        // 1. Ambil Patung (Statue / Coin)
         if (other.CompareTag("Coin"))
         {
             coinsCollected++;
             UpdateCoinUI();
+
+            // TAMBAHAN KODE: Pemicu Suara Ambil Koin (Statue)
+            if (SFXManager.instance != null)
+            {
+                SFXManager.instance.PlaySFX(SFXManager.instance.coinSound);
+            }
+
             Destroy(other.gameObject);
         }
 
@@ -94,7 +101,7 @@ public class CoinCollector : MonoBehaviour
             VictoryAction(); 
         }
 
-        // 3. Kena Jebakan Kota
+        // 3. Kena Jebakan Kota (Trap)
         if (other.CompareTag("Trap"))
         {
             DecreaseLife();
@@ -105,6 +112,12 @@ public class CoinCollector : MonoBehaviour
     {
         playerLives--;
         UpdateHeartUI();
+
+        // TAMBAHAN KODE: Pemicu Suara Terkena Jebakan (Trap)
+        if (SFXManager.instance != null)
+        {
+            SFXManager.instance.PlaySFX(SFXManager.instance.trapSound);
+        }
 
         if (playerLives > 0)
         {
@@ -134,6 +147,13 @@ public class CoinCollector : MonoBehaviour
     {
         isGameFinished = true;
         Debug.Log("Game Over!");
+
+        // TAMBAHAN KODE: Pemicu Suara Game Over (Kalah)
+        if (SFXManager.instance != null)
+        {
+            SFXManager.instance.PlaySFX(SFXManager.instance.gameOverSound);
+        }
+
         if (gameOverCanvas != null) gameOverCanvas.enabled = true;
         Time.timeScale = 0f; 
         Cursor.lockState = CursorLockMode.None; 
@@ -145,6 +165,12 @@ public class CoinCollector : MonoBehaviour
         isGameFinished = true;
         Debug.Log("Selamat! Kamu Menang!");
         
+        // TAMBAHAN KODE: Pemicu Suara Kemenangan (Victory)
+        if (SFXManager.instance != null)
+        {
+            SFXManager.instance.PlaySFX(SFXManager.instance.victorySound);
+        }
+
         if (victoryCanvas != null) victoryCanvas.enabled = true;
         
         Time.timeScale = 0f; 

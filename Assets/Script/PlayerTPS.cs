@@ -20,11 +20,11 @@ public class PlayerTPS : MonoBehaviour
     [SerializeField] private Animator animator;
 
     [SerializeField] private Transform groundCheck;
-    [SerializeField] private float groundDistance = 0.3f;
+    [SerializeField] private float groundDistance = 0.4f;
     [SerializeField] private LayerMask groundMask;
 
     [Header("Mobile Controller (Joystick Pack)")]
-    [SerializeField] private FixedJoystick mobileJoystick; // Kolom untuk drag joystick dari Canvas
+    [SerializeField] private FixedJoystick mobileJoystick; 
 
     private bool isGrounded;
 
@@ -38,6 +38,7 @@ public class PlayerTPS : MonoBehaviour
     {
         controller = GetComponent<CharacterController>();
         inputActions = new TPS();
+        Time.timeScale = 1f; // Paksa waktu berjalan normal
     }
 
     private void OnEnable()
@@ -71,7 +72,11 @@ public class PlayerTPS : MonoBehaviour
 
     private void CheckGround()
     {
-        isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
+        // 1. Cek sphere bawaan via GroundCheck
+        bool sphereCheck = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
+        
+        // 2. Cek tambahan bawaan CharacterController agar tidak pernah meleset
+        isGrounded = sphereCheck || controller.isGrounded;
     }
 
     private void OnMove(InputAction.CallbackContext context)
@@ -84,10 +89,8 @@ public class PlayerTPS : MonoBehaviour
         jumpPressed = true;
     }
 
-    // TAMBAHAN: Fungsi public baru agar bisa dipanggil oleh Event klik Tombol PNG Mobile
     public void TriggerMobileJump()
     {
-        // Hanya trigger jika karakter menyentuh tanah agar tidak bisa double jump di udara
         if (isGrounded)
         {
             jumpPressed = true; 
@@ -96,22 +99,17 @@ public class PlayerTPS : MonoBehaviour
 
     private void HandleMovement()
     {
-        // 1. Ambil input dasar dari New Input System (Keyboard / Gamepad)
         Vector2 finalInput = moveInput;
 
-        // 2. KUNCI UTAMA: Jika Joystick di layar disentuh/digerakkan, gabungkan nilainya ke sistem pergerakan
         if (mobileJoystick != null)
         {
             Vector2 joystickValues = new Vector2(mobileJoystick.Horizontal, mobileJoystick.Vertical);
-            
-            // Jika analog digeser melebihi batas toleransi kecil, override nilai inputnya
             if (joystickValues.sqrMagnitude > 0.01f)
             {
                 finalInput = joystickValues;
             }
         }
 
-        // Konversi nilai input gabungan ke Vector3 gerakan dunia game
         Vector3 move = new Vector3(finalInput.x, 0, finalInput.y);
 
         if (move.magnitude > 0.1f)
@@ -124,15 +122,17 @@ public class PlayerTPS : MonoBehaviour
 
             Vector3 moveDirection = camForward * move.z + camRight * move.x;
 
-            Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
-            transform.rotation = Quaternion.Slerp(
-                transform.rotation,
-                targetRotation,
-                rotationSpeed * Time.deltaTime
-            );
+            if (moveDirection.sqrMagnitude > 0.001f)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
+                transform.rotation = Quaternion.Slerp(
+                    transform.rotation,
+                    targetRotation,
+                    rotationSpeed * Time.deltaTime
+                );
+            }
 
             controller.Move(moveDirection.normalized * moveSpeed * Time.deltaTime);
-
             animator.SetBool("isWalk", true);
         }
         else
@@ -147,9 +147,13 @@ public class PlayerTPS : MonoBehaviour
         {
             velocityY = Mathf.Sqrt(jumpForce * -2f * gravity);
             animator.SetTrigger("jump");
+
+            if (SFXManager.instance != null)
+            {
+                SFXManager.instance.PlaySFX(SFXManager.instance.jumpSound);
+            }
         }
 
-        // Reset status jump setelah diproses di frame ini
         jumpPressed = false;
     }
 
@@ -157,13 +161,15 @@ public class PlayerTPS : MonoBehaviour
     {
         if (isGrounded && velocityY < 0)
         {
-            velocityY = -2f;
+            velocityY = -2f; // Reset gravitasi saat menyentuh tanah agar tidak menumpuk
+        }
+        else
+        {
+            velocityY += gravity * Time.deltaTime;
         }
 
-        velocityY += gravity * Time.deltaTime;
-
-        Vector3 gravityMove = new Vector3(0, velocityY, 0);
-        controller.Move(gravityMove * Time.deltaTime);
+        // Terapkan gravitasi
+        controller.Move(new Vector3(0, velocityY, 0) * Time.deltaTime);
     }
 
     private void UpdateAnimator()
